@@ -32,6 +32,8 @@ public class MainActivity extends Activity {
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
 	private int fsType;
 	
+	private boolean bIsArcS = false;
+	
 	private Context mContext = this;
 	ArrayAdapter<String> adapter = null;	
 	Button buttonMount = null;
@@ -105,24 +107,28 @@ public class MainActivity extends Activity {
 		    	try {
 	        		List<String> response = null;
 	        		
-		    		response = Root.executeSU("lsmod");
-			    	if (response != null) {
-			    		for (String r : response) {
-			    			if (r.contains("usb_storage")) {
-			    				Log.d(TAG, "kernel module already loaded");
-			    				driverLoaded = true;
-			    			}
-			    		}
-			    	}	    	
-	        		
-	        		// load kernel module if needed
-	        		if (!driverLoaded) {
-			    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
-			    		if (response != null) {
-		        			Log.d(TAG, "Error loading kernel module :" + response);
-			    			break;
-			    		}
-			    		driverLoaded = true;
+	        		if (bIsArcS) {
+			    		response = Root.executeSU("lsmod");
+				    	if (response != null) {
+				    		for (String r : response) {
+				    			if (r.contains("usb_storage")) {
+				    				Log.d(TAG, "kernel module already loaded");
+				    				driverLoaded = true;
+				    			}
+				    		}
+				    	}	    	
+		        		
+		        		// load kernel module if needed
+		        		if (!driverLoaded) {
+				    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
+				    		if (response != null) {
+			        			Log.d(TAG, "Error loading kernel module :" + response);
+				    			break;
+				    		}
+				    		driverLoaded = true;
+		        		}
+	        		} else {
+	        			driverLoaded = true;
 	        		}
 		    		
 	        		// check mount point
@@ -307,7 +313,10 @@ public class MainActivity extends Activity {
 			}
         });
 
-        new CopyKernelDriverTask().execute();
+        if (android.os.Build.MODEL.equals("LT18i")) {
+        	bIsArcS = true;
+        	new CopyKernelDriverTask().execute();
+        }
     }
 
     //
