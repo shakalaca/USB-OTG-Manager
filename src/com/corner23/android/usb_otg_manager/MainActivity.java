@@ -151,8 +151,16 @@ public class MainActivity extends Activity {
 	        		
 	        		directoryCreated = true;
 	        		
+	        		// if STORAGE_DEVICE_PATH does not exist, wait for it
+                    File deviceFile = new File(STORAGE_DEVICE_PATH);
+                    int count = 0;
+                    while (!deviceFile.exists() && count < 5) {
+                        Thread.sleep(1000);
+                        count++;
+                    }
+	        		
 	        		// do real mount
-	        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " /dev/block/sda1 " + MOUNT_PATH);
+	        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
 	        		if (response != null) {
 	        			Log.d(TAG, "Error mounting usb storage :" + response);
 	        			break;
