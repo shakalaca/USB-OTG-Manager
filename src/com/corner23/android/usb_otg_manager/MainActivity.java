@@ -348,8 +348,14 @@ public class MainActivity extends Activity {
         	new CopyKernelDriverTask().execute();
         }
     }
+    
+    @Override
+	protected void onDestroy() {
+		super.onDestroy();
+		this.unregisterReceiver(mOtgReceiver);
+	}
 
-    //
+	//
     // Utility function
     //
     private boolean isStorageExist() {
