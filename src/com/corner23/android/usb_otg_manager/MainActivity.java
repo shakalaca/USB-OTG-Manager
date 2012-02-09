@@ -10,7 +10,10 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,10 +26,11 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 
 public class MainActivity extends Activity {
+	
+	public final static String MOUNT_PATH = "/mnt/sdcard/usbstorage";
 
 	private final static String TAG = "USB_OTG_MANAGER";
 	private final static String FN_STORAGE_DRIVER = "usb_storage.ko";
-	private final static String MOUNT_PATH = "/mnt/sdcard/usbstorage";
 	private final static String STORAGE_DEVICE_PATH = "/dev/block/sda1";
 	
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
@@ -38,6 +42,20 @@ public class MainActivity extends Activity {
 	ArrayAdapter<String> adapter = null;	
 	Button buttonMount = null;
 	ImageView ivMountStatus = null;
+
+	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent != null) {
+				String action = intent.getAction();
+				
+				if (action.equals("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED")) {
+					MainActivity.this.finish();
+				}
+			}
+		}
+	};
 
 	private final OnClickListener btnMountOnClickListener = new OnClickListener() {
 
@@ -321,6 +339,10 @@ public class MainActivity extends Activity {
 			}
         });
 
+		IntentFilter filter = new IntentFilter();  
+		filter.addAction("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED");
+		this.registerReceiver(mOtgReceiver, filter);
+		
         if (android.os.Build.MODEL.equals("LT18i")) {
         	bIsArcS = true;
         	new CopyKernelDriverTask().execute();
