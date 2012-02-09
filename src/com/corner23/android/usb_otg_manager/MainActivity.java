@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
@@ -40,7 +41,7 @@ public class MainActivity extends Activity {
 	
 	private Context mContext = this;
 	ArrayAdapter<String> adapter = null;	
-	Button buttonMount = null;
+	TextView tvMountStatus = null;
 	ImageView ivMountStatus = null;
 
 	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
@@ -226,10 +227,10 @@ public class MainActivity extends Activity {
 			}
 			
 	        if (isMounted()) {
-	        	buttonMount.setText(R.string.str_unmount);
+	        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
 	        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
 	        } else {
-	    		buttonMount.setText(R.string.str_mount);
+	        	tvMountStatus.setText(R.string.str_unmounted);
 	        	ivMountStatus.setImageResource(R.drawable.usb_android);
 	        }	        
 		}
@@ -298,10 +299,10 @@ public class MainActivity extends Activity {
 	        }
 	        
 	        if (isMounted()) {
-	        	buttonMount.setText(R.string.str_unmount);
+	        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
 	        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
 	        } else {
-	    		buttonMount.setText(R.string.str_mount);
+	        	tvMountStatus.setText(R.string.str_unmounted);
 	        	ivMountStatus.setImageResource(R.drawable.usb_android);
 	        }	 	        
 		}
@@ -312,13 +313,13 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        buttonMount = (Button) findViewById(R.id.btn_mount);
-        buttonMount.setOnClickListener(btnMountOnClickListener);
+        tvMountStatus = (TextView) findViewById(R.id.tv_mountstatus);
         
         ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
+        ivMountStatus.setOnClickListener(btnMountOnClickListener);
         
         if (isMounted()) {
-        	buttonMount.setText(R.string.str_unmount);
+        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
         	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
         }
         

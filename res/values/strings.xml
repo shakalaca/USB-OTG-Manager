@@ -10,7 +10,9 @@
     <string name="str_mounting">Mounting..</string>
     <string name="str_unmount">Unmount</string>
     <string name="str_unmounting">Unmounting..</string>
-    
+    <string name="str_mounted">Mounted at \n\n%s</string>
+    <string name="str_unmounted">No storage mounted</string>
+        
     <string name="str_err_mount">Error mounting usb storage !</string>
     <string name="str_err_module">Error loading kernel module !</string>
     <string name="str_err_mountpoint">Error creating mount point !</string>
