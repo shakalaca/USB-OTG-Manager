@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
 	private int fsType;
 	
-	private boolean bIsArcS = false;
+	private final static boolean bIsArcS = android.os.Build.MODEL.equals("LT18i");
 	
 	private Context mContext = this;
 	ArrayAdapter<String> adapter = null;	
@@ -343,8 +343,7 @@ public class MainActivity extends Activity {
 		filter.addAction("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED");
 		this.registerReceiver(mOtgReceiver, filter);
 		
-        if (android.os.Build.MODEL.equals("LT18i")) {
-        	bIsArcS = true;
+        if (bIsArcS) {
         	new CopyKernelDriverTask().execute();
         }
     }
