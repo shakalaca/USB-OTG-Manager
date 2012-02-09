@@ -1,14 +1,10 @@
 package com.corner23.android.usb_otg_manager;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.util.LinkedList;
 import java.util.List;
 
 import android.app.Activity;
@@ -109,7 +105,7 @@ public class MainActivity extends Activity {
 		    	try {
 	        		List<String> response = null;
 	        		
-		    		response = executeSU("lsmod");
+		    		response = Root.executeSU("lsmod");
 			    	if (response != null) {
 			    		for (String r : response) {
 			    			if (r.contains("usb_storage")) {
@@ -121,7 +117,7 @@ public class MainActivity extends Activity {
 	        		
 	        		// load kernel module if needed
 	        		if (!driverLoaded) {
-			    		response = executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
+			    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
 			    		if (response != null) {
 		        			Log.d(TAG, "Error loading kernel module :" + response);
 			    			break;
@@ -132,7 +128,7 @@ public class MainActivity extends Activity {
 	        		// check mount point
 	        		File mountDirectory = new File(MOUNT_PATH);
 	        		if (mountDirectory.exists() && !mountDirectory.isDirectory()) {
-			    		response = executeSU("rm " + MOUNT_PATH);
+			    		response = Root.executeSU("rm " + MOUNT_PATH);
 		        		if (response != null) {
 		        			Log.d(TAG, "Error deleting file @ mount point :" + response);
 		        			break;
@@ -140,7 +136,7 @@ public class MainActivity extends Activity {
 	        		}
 	        		
 	        		if (!mountDirectory.exists()) {
-			    		response = executeSU("mkdir " + MOUNT_PATH);
+			    		response = Root.executeSU("mkdir " + MOUNT_PATH);
 		        		if (response != null) {
 		        			Log.d(TAG, "Error creating mount point :" + response);
 		        			break;
@@ -150,7 +146,7 @@ public class MainActivity extends Activity {
 	        		directoryCreated = true;
 	        		
 	        		// do real mount
-	        		response = executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " /dev/block/sda1 " + MOUNT_PATH);
+	        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " /dev/block/sda1 " + MOUNT_PATH);
 	        		if (response != null) {
 	        			Log.d(TAG, "Error mounting usb storage :" + response);
 	        			break;
@@ -184,7 +180,7 @@ public class MainActivity extends Activity {
 				
 				if (directoryCreated) {
 					try {
-						executeSU("rmdir " + MOUNT_PATH);
+						Root.executeSU("rmdir " + MOUNT_PATH);
 					} catch (IOException e) {
 						e.printStackTrace();
 					} catch (InterruptedException e) {
@@ -223,7 +219,7 @@ public class MainActivity extends Activity {
 	        	try {
 	        		List<String> response = null;
 	        		
-	        		response = executeSU("umount " + MOUNT_PATH);
+	        		response = Root.executeSU("umount " + MOUNT_PATH);
 	        		if (response != null) {
 	        			Log.d(TAG, "Error umount usb storage :" + response);
 	        			if (isStorageExist()) {
@@ -232,14 +228,14 @@ public class MainActivity extends Activity {
 	        			}
 	        		}
 
-	        		response = executeSU("rmdir " + MOUNT_PATH);
+	        		response = Root.executeSU("rmdir " + MOUNT_PATH);
 	        		if (response != null) {
 	        			Log.d(TAG, "Error removing mount point :" + response);
 	        			break;
 	        		}
 	        		
 	        		// TODO: option for user
-//	            	response = executeSU("rmmod " + FN_STORAGE_DRIVER);
+//	            	response = Root.executeSU("rmmod " + FN_STORAGE_DRIVER);
 //	        		if (response != null) {
 //	        			Log.d(TAG, "Error disabling kernel module :" + response);
 //	        			break;
@@ -341,81 +337,5 @@ public class MainActivity extends Activity {
     	}
     	in.close();
     	out.close();
-    }
-
-    private List<String> executeSU(String command) throws IOException, InterruptedException {
-    	return executeSU(new String[] {command});
-    }
-
-    private List<String> executeSU(String[] commands) throws IOException, InterruptedException {
-    	List<String> response = null;
-    	List<String> errors = null;
-        Process process = null;
-        DataOutputStream os = null;
-        InputStreamReader osRes = null;
-        InputStreamReader osErr = null;
-
-        try {
-            process = Runtime.getRuntime().exec("su");
-            
-            os = new DataOutputStream(process.getOutputStream());
-            osRes = new InputStreamReader(process.getInputStream());
-            osErr = new InputStreamReader(process.getErrorStream());
-            BufferedReader readerRes = new BufferedReader(osRes);
-            BufferedReader readerErr = new BufferedReader(osErr);
-            
-            for (String single : commands) {
-                os.writeBytes(single + "\n");
-                os.flush();
-            }
-
-            os.writeBytes("exit \n");
-            os.flush();
-
-            String line = readerRes.readLine();
-            if (line != null) {
-            	response = new LinkedList<String>();
-                while (line != null) {
-                    response.add(line);
-                    Log.d(TAG, "R:" + line + "$");
-                    line = readerRes.readLine();
-                }
-            }
-            
-            // check if any error return string. Can I use return value instead ?
-            line = readerErr.readLine();
-            while (line != null) {
-            	String str = line.trim();
-            	if (!str.equals("")) {
-            		if (errors == null) {
-            			errors = new LinkedList<String>();
-            		}
-            		errors.add(line);
-                    Log.d(TAG, "E:" + line + "$");
-            	}
-                line = readerErr.readLine();
-            }
-        }
-        catch (Exception ex) {
-        	ex.printStackTrace();
-        }
-        finally {
-            try {
-                if (os != null) {
-                    os.close();
-                }
-                if (osRes != null) {
-                    osRes.close();
-                }
-                if (osErr != null) {
-                	osErr.close();
-                }
-                process.destroy();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        return errors != null ? errors : response;
     }
 }
