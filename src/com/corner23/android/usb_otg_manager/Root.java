@@ -78,7 +78,7 @@ public class Root {
                 if (osErr != null) {
                 	osErr.close();
                 }
-                process.destroy();
+                // process.destroy();
             } catch (Exception e) {
                 e.printStackTrace();
             }
