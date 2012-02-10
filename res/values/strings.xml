@@ -8,10 +8,13 @@
     <string name="str_initial">Installing kernel module..</string>
     <string name="str_mount">Mount</string>
     <string name="str_mounting">Mounting..</string>
-    <string name="str_unmount">Unmount</string>
+    <string name="str_unmount">Unmount storage</string>
     <string name="str_unmounting">Unmounting..</string>
-    <string name="str_mounted">Mounted at \n\n%s</string>
+    <string name="str_mounted_path">Mounted at \n\n%s</string>
     <string name="str_unmounted">No storage mounted</string>
+
+    <string name="str_mounted_notify">Storage mounted</string>
+    <string name="str_unmounted_notify">Storage unmounted</string>
         
     <string name="str_err_mount">Error mounting usb storage !</string>
     <string name="str_err_module">Error loading kernel module !</string>
@@ -19,4 +22,5 @@
     <string name="str_err_unmount">Error unmounting usb storage !</string>
     
     <string name="str_close_app">Close app when mounted</string>
+    
 </resources>

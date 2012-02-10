@@ -209,7 +209,7 @@ public class MainActivity extends Activity {
 		return ret;
 	}
 	
-	private boolean doUnmount() {
+	public static boolean doUnmount() {
 		List<String> response = null;
 		boolean bSuccess = false;
 		
@@ -250,7 +250,7 @@ public class MainActivity extends Activity {
 	
 	private void updateUI() {
         if (isMounted()) {
-        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
+        	tvMountStatus.setText(getResources().getString(R.string.str_mounted_path, MOUNT_PATH));
         	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
         } else {
         	tvMountStatus.setText(R.string.str_unmounted);
@@ -259,16 +259,17 @@ public class MainActivity extends Activity {
     }
 
 	private void showNotification() {
-		Intent notifyIntent = new Intent(this, MainActivity.class);
-		notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent appIntent = PendingIntent.getActivity(MainActivity.this, 0, notifyIntent, 0);
+		Intent notifyIntent = new Intent(mContext, Unmount.class);
+		// notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent appIntent = PendingIntent.getService(mContext, 0, notifyIntent, 0);
 
         Notification notification = new Notification();
         notification.icon = R.drawable.notification;
-        notification.tickerText = "Storage Mounted";
+        notification.tickerText = getResources().getString(R.string.str_mounted_notify);
         notification.defaults = Notification.DEFAULT_ALL;
         notification.flags |= Notification.FLAG_NO_CLEAR;
-        notification.setLatestEventInfo(MainActivity.this, "USB OTG Manager", "Unmount storage", appIntent);
+        notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
+        		getResources().getString(R.string.str_unmount) + " " + MOUNT_PATH, appIntent);
         notificationManager.notify(0, notification);        
 	}
 	
@@ -417,11 +418,11 @@ public class MainActivity extends Activity {
 	//
     // Utility function
     //
-    private boolean isStorageExist() {
+    private static boolean isStorageExist() {
     	return new File(STORAGE_DEVICE_PATH).exists();
     }
     
-    private boolean isMounted() {
+    public static boolean isMounted() {
     	File dir = new File(MOUNT_PATH);
     	if (dir.exists() && dir.isDirectory()) {
     		return true;
