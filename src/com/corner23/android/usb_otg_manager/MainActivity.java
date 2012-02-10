@@ -5,18 +5,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,7 +25,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -35,6 +34,9 @@ public class MainActivity extends Activity {
 	public final static String ACTION_SE_USB_DEVICE_DETACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED";
 	public final static String ACTION_SE_USB_DEVICE_ATTACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_CONNECTED";
 	public final static String MOUNT_PATH = "/mnt/sdcard/usbstorage";
+
+	public final static String PREFS_NAME = "otg_mgr_settings";
+	public final static String PREFS_CLOSE_ON_MOUNT = "prefs_close_on_mount";
 
 	private final static String TAG = "USB_OTG_MANAGER";
 	private final static String FN_STORAGE_DRIVER = "usb_storage.ko";
@@ -54,7 +56,7 @@ public class MainActivity extends Activity {
 	ArrayAdapter<String> adapter = null;	
 	TextView tvMountStatus = null;
 	ImageView ivMountStatus = null;
-
+	NotificationManager notificationManager = null;
 	// inner broadcast receiver for closing self when removing usb storage
 	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
 
@@ -247,6 +249,20 @@ public class MainActivity extends Activity {
         }	
     }
 
+	private void showNotification() {
+		Intent notifyIntent = new Intent(this, MainActivity.class);
+		notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        PendingIntent appIntent = PendingIntent.getActivity(MainActivity.this, 0, notifyIntent, 0);
+
+        Notification notification = new Notification();
+        notification.icon = R.drawable.notification;
+        notification.tickerText = "Storage Mounted";
+        notification.defaults = Notification.DEFAULT_ALL;
+        notification.flags |= Notification.FLAG_NO_CLEAR;
+        notification.setLatestEventInfo(MainActivity.this, "USB OTG Manager", "Unmount storage", appIntent);
+        notificationManager.notify(0, notification);        
+	}
+	
 	private class MountStorageTask extends AsyncTask<Void, Void, Integer> {
 
     	private ProgressDialog dialogMounting = null;
@@ -267,7 +283,9 @@ public class MainActivity extends Activity {
 				dialogMounting.dismiss();
 			}
 			
-			if (result != STATE_SUCCESS) {
+			if (result == STATE_SUCCESS) {
+				showNotification();
+			} else {
 				int msgId = R.string.str_err_mount;
 				
 				if (result == STATE_ERROR_MODULE) {
@@ -306,7 +324,9 @@ public class MainActivity extends Activity {
 				dialogUnmounting.dismiss();
 			}
 			
-	        if (!success) {
+	        if (success) {
+				notificationManager.cancelAll();
+	        } else {
 	        	new AlertDialog.Builder(mContext)
 		    		.setMessage(R.string.str_err_unmount)
 		    		.setNeutralButton(android.R.string.ok, null)
@@ -322,6 +342,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		
         tvMountStatus = (TextView) findViewById(R.id.tv_mountstatus);
         
         ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
