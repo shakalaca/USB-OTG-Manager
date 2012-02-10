@@ -19,7 +19,6 @@ public class UnmountService extends Service {
     	NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification();
         notification.icon = R.drawable.notification;
-        notification.defaults = Notification.DEFAULT_ALL;
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
         
     	if (success) {
@@ -27,6 +26,7 @@ public class UnmountService extends Service {
             notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
             		getResources().getString(R.string.str_unmounted_notify), pi);
     	} else {
+            notification.defaults = Notification.DEFAULT_ALL;
             notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
             		getResources().getString(R.string.str_err_unmount), pi);
     	}

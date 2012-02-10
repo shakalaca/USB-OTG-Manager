@@ -270,7 +270,7 @@ public class Main extends Activity {
         Notification notification = new Notification();
         notification.icon = R.drawable.notification;
         notification.tickerText = getResources().getString(R.string.str_mounted_notify);
-        notification.defaults = Notification.DEFAULT_ALL;
+        // notification.defaults = Notification.DEFAULT_ALL;
         notification.flags |= Notification.FLAG_NO_CLEAR;
         notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
         		getResources().getString(R.string.str_unmount) + " " + MOUNT_PATH, appIntent);
