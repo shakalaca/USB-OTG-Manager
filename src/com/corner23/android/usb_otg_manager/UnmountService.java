@@ -15,11 +15,12 @@ public class UnmountService extends Service {
     
     private void handleCommand(Intent intent) {
     	boolean success = Main.doUnmount();
-    	PendingIntent pi = PendingIntent.getService(mContext, 0, null, 0);
+    	PendingIntent pi = PendingIntent.getService(mContext, 0, new Intent(), 0);
     	NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification();
         notification.icon = R.drawable.notification;
         notification.defaults = Notification.DEFAULT_ALL;
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
         
     	if (success) {
     		notificationManager.cancelAll();
@@ -31,6 +32,7 @@ public class UnmountService extends Service {
     	}
     	
         notificationManager.notify(0, notification);
+        this.stopSelf();
     }
     	
 	@Override
@@ -46,6 +48,6 @@ public class UnmountService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		handleCommand(intent);
-		return START_STICKY;
+		return START_NOT_STICKY;
 	}	
 }
