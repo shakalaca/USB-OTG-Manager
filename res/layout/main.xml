@@ -29,7 +29,13 @@
 	    android:layout_height="match_parent"
 	    android:orientation="vertical"
 	    android:gravity="center" >
-        
+
+        <CheckBox
+            android:id="@+id/chkbox_hide"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/str_close_app" />
+
         <TextView 
             android:id="@+id/tv_mountstatus"
 	        android:layout_width="wrap_content"

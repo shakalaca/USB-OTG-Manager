@@ -17,4 +17,6 @@
     <string name="str_err_module">Error loading kernel module !</string>
     <string name="str_err_mountpoint">Error creating mount point !</string>
     <string name="str_err_unmount">Error unmounting usb storage !</string>
+    
+    <string name="str_close_app">Close app when mounted</string>
 </resources>

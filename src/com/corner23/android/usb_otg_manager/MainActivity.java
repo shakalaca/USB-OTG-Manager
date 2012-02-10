@@ -17,6 +17,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,6 +26,9 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -56,7 +60,12 @@ public class MainActivity extends Activity {
 	ArrayAdapter<String> adapter = null;	
 	TextView tvMountStatus = null;
 	ImageView ivMountStatus = null;
+	CheckBox cbCloseOnMount = null;
 	NotificationManager notificationManager = null;
+	SharedPreferences mPrefs = null;
+	
+	boolean bCloseOnMount = false;
+	
 	// inner broadcast receiver for closing self when removing usb storage
 	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
 
@@ -300,7 +309,11 @@ public class MainActivity extends Activity {
 		        	.show();
 			}
 			
-			updateUI();
+			if (bCloseOnMount) {
+				finish();
+			} else {
+				updateUI();			
+			}
 		}
 	}
     
@@ -340,18 +353,35 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
         
 		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		
+		mPrefs = getSharedPreferences(PREFS_NAME, 0);
+		bCloseOnMount = mPrefs.getBoolean(PREFS_CLOSE_ON_MOUNT, false);
+		        
+        setContentView(R.layout.main);
+
+        cbCloseOnMount = (CheckBox) findViewById(R.id.chkbox_hide);
+        cbCloseOnMount.setChecked(bCloseOnMount);
+        cbCloseOnMount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				bCloseOnMount = isChecked;
+				SharedPreferences.Editor editor = mPrefs.edit();
+				editor.putBoolean(PREFS_CLOSE_ON_MOUNT, bCloseOnMount);
+				editor.commit();
+			}
+        });
+
         tvMountStatus = (TextView) findViewById(R.id.tv_mountstatus);
-        
+
         ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
         ivMountStatus.setOnClickListener(btnMountOnClickListener);
-        
+
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, fsTypes);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        
+
         Spinner spinner = (Spinner) findViewById(R.id.spinner_fstype);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(new Spinner.OnItemSelectedListener(){
