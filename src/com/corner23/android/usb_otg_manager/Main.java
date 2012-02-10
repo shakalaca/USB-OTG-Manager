@@ -33,7 +33,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class Main extends Activity {
 	
 	public final static String ACTION_SE_USB_DEVICE_DETACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED";
 	public final static String ACTION_SE_USB_DEVICE_ATTACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_CONNECTED";
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
 				
 				if (action.equals(ACTION_SE_USB_DEVICE_DETACHED) ||
 					action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
-					MainActivity.this.finish();
+					Main.this.finish();
 				}
 			}
 		}
