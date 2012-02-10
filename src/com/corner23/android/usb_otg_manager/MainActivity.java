@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
@@ -14,6 +16,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +32,8 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	
+	public final static String ACTION_SE_USB_DEVICE_DETACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED";
+	public final static String ACTION_SE_USB_DEVICE_ATTACHED = "com.sonyericsson.hardware.action.USB_OTG_DEVICE_CONNECTED";
 	public final static String MOUNT_PATH = "/mnt/sdcard/usbstorage";
 
 	private final static String TAG = "USB_OTG_MANAGER";
@@ -51,7 +57,8 @@ public class MainActivity extends Activity {
 			if (intent != null) {
 				String action = intent.getAction();
 				
-				if (action.equals("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED")) {
+				if (action.equals(ACTION_SE_USB_DEVICE_DETACHED) ||
+					action.equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
 					MainActivity.this.finish();
 				}
 			}
@@ -341,12 +348,13 @@ public class MainActivity extends Activity {
         });
 
 		IntentFilter filter = new IntentFilter();  
-		filter.addAction("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED");
+		filter.addAction(ACTION_SE_USB_DEVICE_DETACHED);
+		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		this.registerReceiver(mOtgReceiver, filter);
 		
         if (bIsArcS) {
         	new CopyKernelDriverTask().execute();
-        }
+        }        
     }
     
     @Override

@@ -5,6 +5,7 @@ import java.io.IOException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.usb.UsbManager;
 
 public class OtgReceiver extends BroadcastReceiver {
 
@@ -13,11 +14,12 @@ public class OtgReceiver extends BroadcastReceiver {
 		if (intent != null) {
 			String action = intent.getAction();
 			
-			if (action.equals("com.sonyericsson.hardware.action.USB_OTG_DEVICE_CONNECTED")) {
+			if (action.equals(MainActivity.ACTION_SE_USB_DEVICE_ATTACHED) ||
+				action.equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
 				Intent i = new Intent(context, MainActivity.class);
 				i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				context.startActivity(i);
-			} else if (action.equals("com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED")) {
+			} else if (action.equals(MainActivity.ACTION_SE_USB_DEVICE_DETACHED)) {
 				try {
 					Root.executeSU(new String[] {"umount " + MainActivity.MOUNT_PATH, "rmdir " + MainActivity.MOUNT_PATH });
 				} catch (IOException e) {
