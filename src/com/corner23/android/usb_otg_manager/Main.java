@@ -259,7 +259,7 @@ public class Main extends Activity {
     }
 
 	private void showNotification() {
-		Intent notifyIntent = new Intent(mContext, Unmount.class);
+		Intent notifyIntent = new Intent(mContext, UnmountService.class);
 		// notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent appIntent = PendingIntent.getService(mContext, 0, notifyIntent, 0);
 

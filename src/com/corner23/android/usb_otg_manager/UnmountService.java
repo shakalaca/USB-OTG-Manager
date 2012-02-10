@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-public class Unmount extends Service {
+public class UnmountService extends Service {
 
 	private Context mContext = this;
     
