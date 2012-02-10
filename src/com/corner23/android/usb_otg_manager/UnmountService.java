@@ -14,8 +14,6 @@ public class UnmountService extends Service {
 	private Context mContext = this;
     
     private void handleCommand(Intent intent) {
-    	Log.d("HAHHAHAAAA", "FUCKING DEAD!");
-    	
     	boolean success = Main.doUnmount();
     	PendingIntent pi = PendingIntent.getService(mContext, 0, null, 0);
     	NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
