@@ -2,6 +2,7 @@ package com.corner23.android.usb_otg_manager;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,7 @@ public class Unmount extends Service {
     	Log.d("HAHHAHAAAA", "FUCKING DEAD!");
     	
     	boolean success = Main.doUnmount();
+    	PendingIntent pi = PendingIntent.getService(mContext, 0, null, 0);
     	NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification();
         notification.icon = R.drawable.notification;
@@ -24,10 +26,10 @@ public class Unmount extends Service {
     	if (success) {
     		notificationManager.cancelAll();
             notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
-            		getResources().getString(R.string.str_unmounted_notify), null);
+            		getResources().getString(R.string.str_unmounted_notify), pi);
     	} else {
             notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
-            		getResources().getString(R.string.str_err_unmount), null);
+            		getResources().getString(R.string.str_err_unmount), pi);
     	}
     	
         notificationManager.notify(0, notification);
