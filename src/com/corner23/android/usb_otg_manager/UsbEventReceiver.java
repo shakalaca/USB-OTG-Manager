@@ -8,7 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbManager;
 
-public class OtgReceiver extends BroadcastReceiver {
+public class UsbEventReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {

@@ -28,7 +28,7 @@
                 android:resource="@xml/device_filter" />			
 		</activity>
         <service android:name=".Unmount" />
-		<receiver android:name=".OtgReceiver">
+		<receiver android:name=".UsbEventReceiver">
 			<intent-filter>
 				<action android:name="com.sonyericsson.hardware.action.USB_OTG_DEVICE_CONNECTED" />
 				<action android:name="com.sonyericsson.hardware.action.USB_OTG_DEVICE_DISCONNECTED" />
