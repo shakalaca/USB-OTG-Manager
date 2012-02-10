@@ -50,7 +50,13 @@ public class Main extends Activity {
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
 	private int fsType;
 	
-	private final static boolean bIsArcS = android.os.Build.MODEL.equals("LT18i");
+	private final static boolean bIsXperiaSeries = android.os.Build.MODEL.equals("LT18i") || // arc s
+													android.os.Build.MODEL.equals("LT15i") || // arc
+													android.os.Build.MODEL.equals("SK17i") || // mini pro
+													android.os.Build.MODEL.equals("ST15i") || // mini
+													android.os.Build.MODEL.equals("MT15i") || // neo
+													android.os.Build.MODEL.equals("MT11i") || // neo v
+													android.os.Build.MODEL.equals("Z1i");   // [;ay
 	
 	private final static int STATE_SUCCESS = 0;
 	private final static int STATE_ERROR_MOUNT = -1;
@@ -144,7 +150,7 @@ public class Main extends Activity {
 				
     	do {
 	    	try {
-        		if (bIsArcS) {
+        		if (bIsXperiaSeries) {
 		    		response = Root.executeSU("lsmod");
 			    	if (response != null) {
 			    		for (String r : response) {
@@ -422,7 +428,7 @@ public class Main extends Activity {
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
 		mContext.registerReceiver(mOtgReceiver, filter);
 		
-        if (bIsArcS) {
+        if (bIsXperiaSeries) {
         	new CopyKernelDriverTask().execute();
         }        
     }
