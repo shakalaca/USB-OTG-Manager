@@ -380,7 +380,7 @@ public class MainActivity extends Activity {
         ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
         ivMountStatus.setOnClickListener(btnMountOnClickListener);
 
-        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, fsTypes);
+        adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, fsTypes);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner_fstype);
@@ -402,7 +402,7 @@ public class MainActivity extends Activity {
 		IntentFilter filter = new IntentFilter();  
 		filter.addAction(ACTION_SE_USB_DEVICE_DETACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-		this.registerReceiver(mOtgReceiver, filter);
+		mContext.registerReceiver(mOtgReceiver, filter);
 		
         if (bIsArcS) {
         	new CopyKernelDriverTask().execute();
@@ -412,7 +412,7 @@ public class MainActivity extends Activity {
     @Override
 	protected void onDestroy() {
 		super.onDestroy();
-		this.unregisterReceiver(mOtgReceiver);
+		mContext.unregisterReceiver(mOtgReceiver);
 	}
 
 	//
