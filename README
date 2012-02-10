@@ -1,17 +1,27 @@
 USB OTG Manager
 
-This software is designed for Sony Ericsson Xperia Arc S.
+This software is originally designed for Sony Ericsson Xperia Arc S.
 Since OTG is enabled in kernel, I'm wondering why I can't access my memory
 stick. So I've created this little application for reading books on my thumb
 disk, and happily ever after ! :D
 
-* Support FAT USB memory stick
-* Support Card Reader
+Supported Phone:
+* Sony Ericsson Arc S
+* Samsung Galaxy Nexus
+
+Supported USB Device:
+* FAT USB memory stick
+* Card Reader
 
 Just for fun, any questions feel free contact me :-)
 
 E-mail: shakalaca AT gmail dot com
 
-2011-11-26
-Initial version
+2012-02-10
+* Support 3.x or higher version with OTG support built in kernel
+* Add notification for unmount
+* Automatically opens app when storage plugged in
+* Support read only mode
 
+2011-11-26
+* Initial version
