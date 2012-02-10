@@ -45,11 +45,17 @@ public class MainActivity extends Activity {
 	
 	private final static boolean bIsArcS = android.os.Build.MODEL.equals("LT18i");
 	
+	private final static int STATE_SUCCESS = 0;
+	private final static int STATE_ERROR_MOUNT = -1;
+	private final static int STATE_ERROR_MODULE = -2;
+	private final static int STATE_ERROR_MOUNTPOINT = -3;
+	
 	private Context mContext = this;
 	ArrayAdapter<String> adapter = null;	
 	TextView tvMountStatus = null;
 	ImageView ivMountStatus = null;
 
+	// inner broadcast receiver for closing self when removing usb storage
 	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -77,6 +83,7 @@ public class MainActivity extends Activity {
 		}
 	};
 	
+	// this is only for ArcS
 	private class CopyKernelDriverTask extends AsyncTask<Void, Void, Void> {
 
 		private ProgressDialog dialogCopyingModule = null;
@@ -115,12 +122,134 @@ public class MainActivity extends Activity {
 		}
 	}
 	
-    private class MountStorageTask extends AsyncTask<Void, Void, Void> {
+	private int doMount() {
+		int ret = STATE_ERROR_MOUNT;
+		boolean driverLoaded = false;
+		List<String> response = null;
+				
+    	do {
+	    	try {
+        		if (bIsArcS) {
+		    		response = Root.executeSU("lsmod");
+			    	if (response != null) {
+			    		for (String r : response) {
+			    			if (r.contains("usb_storage")) {
+			    				Log.d(TAG, "kernel module already loaded");
+			    				driverLoaded = true;
+			    			}
+			    		}
+			    	}	    	
+	        		
+	        		// load kernel module if needed
+	        		if (!driverLoaded) {
+			    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
+			    		if (response != null) {
+		        			Log.d(TAG, "Error loading kernel module :" + response);
+			        		ret = STATE_ERROR_MODULE;
+			    			break;
+			    		}
+	        		}
+        		}
+	    		
+        		// check mount point
+        		File mountDirectory = new File(MOUNT_PATH);
+        		if (mountDirectory.exists() && !mountDirectory.isDirectory()) {
+		    		response = Root.executeSU("rm " + MOUNT_PATH);
+	        		if (response != null) {
+	        			Log.d(TAG, "Error deleting file @ mount point :" + response);
+	        			ret = STATE_ERROR_MOUNTPOINT;
+	        			break;
+	        		}
+        		}
+        		
+        		if (!mountDirectory.exists()) {
+		    		response = Root.executeSU("mkdir " + MOUNT_PATH);
+	        		if (response != null) {
+	        			Log.d(TAG, "Error creating mount point :" + response);
+	        			ret = STATE_ERROR_MOUNTPOINT;
+	        			break;
+	        		}
+        		}
+        		
+        		// if STORAGE_DEVICE_PATH does not exist, wait for it
+                File deviceFile = new File(STORAGE_DEVICE_PATH);
+                int count = 0;
+                while (!deviceFile.exists() && count < 5) {
+                    Thread.sleep(1000);
+                    count++;
+                }
+        		
+        		// do real mount
+        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
+        		if (response != null) {
+        			Log.d(TAG, "Error mounting usb storage :" + response);
+					Root.executeSU("rmdir " + MOUNT_PATH);
+        			break;
+        		}
+        		
+        		ret = STATE_SUCCESS;
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		} catch (InterruptedException e) {
+    			e.printStackTrace();
+    		}
+    	} while (false);
+    	
+		return ret;
+	}
+	
+	private boolean doUnmount() {
+		List<String> response = null;
+		boolean bSuccess = false;
+		
+    	do {
+        	try {
+        		response = Root.executeSU("umount " + MOUNT_PATH);
+        		if (response != null) {
+        			Log.d(TAG, "Error umount usb storage :" + response);
+        			if (isStorageExist()) {
+        				// if there's no storage inserted, do not break here
+        				break;
+        			}
+        		}
+
+        		response = Root.executeSU("rmdir " + MOUNT_PATH);
+        		if (response != null) {
+        			Log.d(TAG, "Error removing mount point :" + response);
+        			break;
+        		}
+        		
+        		// TODO: option for user
+//            	response = Root.executeSU("rmmod " + FN_STORAGE_DRIVER);
+//        		if (response != null) {
+//        			Log.d(TAG, "Error disabling kernel module :" + response);
+//        			break;
+//        		}
+        		bSuccess = true;
+        		
+    		} catch (IOException e) {
+    			e.printStackTrace();
+    		} catch (InterruptedException e) {
+    			e.printStackTrace();
+    		}
+    	} while (false);
+    	
+		return bSuccess;
+	}
+	
+	private void updateUI() {
+        if (isMounted()) {
+        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
+        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
+        } else {
+        	tvMountStatus.setText(R.string.str_unmounted);
+        	ivMountStatus.setImageResource(R.drawable.usb_android);
+        }	
+    }
+
+	private class MountStorageTask extends AsyncTask<Void, Void, Integer> {
 
     	private ProgressDialog dialogMounting = null;
-    	private boolean driverLoaded = false;
-    	private boolean directoryCreated = false;
-    	private boolean deviceMounted = false;
     	
 		@Override
 		protected void onPreExecute() {
@@ -128,125 +257,38 @@ public class MainActivity extends Activity {
 		}
 		
 		@Override
-		protected Void doInBackground(Void... params) {
-	    	do {
-		    	try {
-	        		List<String> response = null;
-	        		
-	        		if (bIsArcS) {
-			    		response = Root.executeSU("lsmod");
-				    	if (response != null) {
-				    		for (String r : response) {
-				    			if (r.contains("usb_storage")) {
-				    				Log.d(TAG, "kernel module already loaded");
-				    				driverLoaded = true;
-				    			}
-				    		}
-				    	}	    	
-		        		
-		        		// load kernel module if needed
-		        		if (!driverLoaded) {
-				    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
-				    		if (response != null) {
-			        			Log.d(TAG, "Error loading kernel module :" + response);
-				    			break;
-				    		}
-				    		driverLoaded = true;
-		        		}
-	        		} else {
-	        			driverLoaded = true;
-	        		}
-		    		
-	        		// check mount point
-	        		File mountDirectory = new File(MOUNT_PATH);
-	        		if (mountDirectory.exists() && !mountDirectory.isDirectory()) {
-			    		response = Root.executeSU("rm " + MOUNT_PATH);
-		        		if (response != null) {
-		        			Log.d(TAG, "Error deleting file @ mount point :" + response);
-		        			break;
-		        		}
-	        		}
-	        		
-	        		if (!mountDirectory.exists()) {
-			    		response = Root.executeSU("mkdir " + MOUNT_PATH);
-		        		if (response != null) {
-		        			Log.d(TAG, "Error creating mount point :" + response);
-		        			break;
-		        		}
-	        		}
-	        		
-	        		directoryCreated = true;
-	        		
-	        		// if STORAGE_DEVICE_PATH does not exist, wait for it
-                    File deviceFile = new File(STORAGE_DEVICE_PATH);
-                    int count = 0;
-                    while (!deviceFile.exists() && count < 5) {
-                        Thread.sleep(1000);
-                        count++;
-                    }
-	        		
-	        		// do real mount
-	        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
-	        		if (response != null) {
-	        			Log.d(TAG, "Error mounting usb storage :" + response);
-	        			break;
-	        		}
-	        		
-	        		deviceMounted = true;
-	    		} catch (IOException e) {
-	    			e.printStackTrace();
-	    		} catch (InterruptedException e) {
-	    			e.printStackTrace();
-	    		}
-	    	} while (false);
-	    	
-			return null;
+		protected Integer doInBackground(Void... params) {
+			return doMount();
 		}
 		
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onPostExecute(Integer result) {
 			if (dialogMounting != null) {
 				dialogMounting.dismiss();
 			}
 			
-			if (!deviceMounted) {
+			if (result != STATE_SUCCESS) {
 				int msgId = R.string.str_err_mount;
 				
-				if (!driverLoaded) {
+				if (result == STATE_ERROR_MODULE) {
 					msgId = R.string.str_err_module;
-				} else if (!directoryCreated) {
+				} else if (result == STATE_ERROR_MOUNTPOINT) {
 					msgId = R.string.str_err_mountpoint;
 				}
 				
-				if (directoryCreated) {
-					try {
-						Root.executeSU("rmdir " + MOUNT_PATH);
-					} catch (IOException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
 	        	new AlertDialog.Builder(mContext)
 		    		.setMessage(msgId)
 		    		.setNeutralButton(android.R.string.ok, null)
 		        	.show();
 			}
 			
-	        if (isMounted()) {
-	        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
-	        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
-	        } else {
-	        	tvMountStatus.setText(R.string.str_unmounted);
-	        	ivMountStatus.setImageResource(R.drawable.usb_android);
-	        }	        
+			updateUI();
 		}
 	}
     
-    private class UnmountStorageTask extends AsyncTask<Void, Void, Void> {
+    private class UnmountStorageTask extends AsyncTask<Void, Void, Boolean> {
 
     	private ProgressDialog dialogUnmounting = null;
-    	private boolean deviceUmounted = false;
     	
 		@Override
 		protected void onPreExecute() {
@@ -254,64 +296,24 @@ public class MainActivity extends Activity {
 		}
 		
 		@Override
-		protected Void doInBackground(Void... params) {
-	    	do {
-	        	try {
-	        		List<String> response = null;
-	        		
-	        		response = Root.executeSU("umount " + MOUNT_PATH);
-	        		if (response != null) {
-	        			Log.d(TAG, "Error umount usb storage :" + response);
-	        			if (isStorageExist()) {
-	        				// if there's no storage inserted, do not break here
-	        				break;
-	        			}
-	        		}
-
-	        		response = Root.executeSU("rmdir " + MOUNT_PATH);
-	        		if (response != null) {
-	        			Log.d(TAG, "Error removing mount point :" + response);
-	        			break;
-	        		}
-	        		
-	        		// TODO: option for user
-//	            	response = Root.executeSU("rmmod " + FN_STORAGE_DRIVER);
-//	        		if (response != null) {
-//	        			Log.d(TAG, "Error disabling kernel module :" + response);
-//	        			break;
-//	        		}
-	            	deviceUmounted = true;
-	        		
-	    		} catch (IOException e) {
-	    			e.printStackTrace();
-	    		} catch (InterruptedException e) {
-	    			e.printStackTrace();
-	    		}
-	    	} while (false);
-	    	
-			return null;
+		protected Boolean doInBackground(Void... params) {
+			return doUnmount();
 		}
 		
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onPostExecute(Boolean success) {
 			if (dialogUnmounting != null) {
 				dialogUnmounting.dismiss();
 			}
 			
-	        if (!deviceUmounted) {
+	        if (!success) {
 	        	new AlertDialog.Builder(mContext)
 		    		.setMessage(R.string.str_err_unmount)
 		    		.setNeutralButton(android.R.string.ok, null)
 		        	.show();
 	        }
 	        
-	        if (isMounted()) {
-	        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
-	        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
-	        } else {
-	        	tvMountStatus.setText(R.string.str_unmounted);
-	        	ivMountStatus.setImageResource(R.drawable.usb_android);
-	        }	 	        
+			updateUI();
 		}
 	}    
     
@@ -324,11 +326,6 @@ public class MainActivity extends Activity {
         
         ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
         ivMountStatus.setOnClickListener(btnMountOnClickListener);
-        
-        if (isMounted()) {
-        	tvMountStatus.setText(getResources().getString(R.string.str_mounted, MOUNT_PATH));
-        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
-        }
         
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, fsTypes);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -347,6 +344,8 @@ public class MainActivity extends Activity {
 			}
         });
 
+        updateUI();
+        
 		IntentFilter filter = new IntentFilter();  
 		filter.addAction(ACTION_SE_USB_DEVICE_DETACHED);
 		filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
