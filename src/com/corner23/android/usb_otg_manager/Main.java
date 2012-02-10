@@ -41,6 +41,7 @@ public class Main extends Activity {
 
 	public final static String PREFS_NAME = "otg_mgr_settings";
 	public final static String PREFS_CLOSE_ON_MOUNT = "prefs_close_on_mount";
+	public final static String PREFS_READ_ONLY = "prefs_read_only";
 
 	private final static String TAG = "USB_OTG_MANAGER";
 	private final static String FN_STORAGE_DRIVER = "usb_storage.ko";
@@ -61,10 +62,13 @@ public class Main extends Activity {
 	TextView tvMountStatus = null;
 	ImageView ivMountStatus = null;
 	CheckBox cbCloseOnMount = null;
+	CheckBox cbReadOnly = null;
+	
 	NotificationManager notificationManager = null;
 	SharedPreferences mPrefs = null;
 	
 	boolean bCloseOnMount = false;
+	boolean bReadOnly = false;
 	
 	// inner broadcast receiver for closing self when removing usb storage
 	private final BroadcastReceiver mOtgReceiver = new BroadcastReceiver() {
@@ -191,7 +195,7 @@ public class Main extends Activity {
                 }
         		
         		// do real mount
-        		response = Root.executeSU("mount -rw -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
+        		response = Root.executeSU("mount -r " + (bReadOnly ? "" : "-w") + " -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
         		if (response != null) {
         			Log.d(TAG, "Error mounting usb storage :" + response);
 					Root.executeSU("rmdir " + MOUNT_PATH);
@@ -359,6 +363,7 @@ public class Main extends Activity {
 		
 		mPrefs = getSharedPreferences(PREFS_NAME, 0);
 		bCloseOnMount = mPrefs.getBoolean(PREFS_CLOSE_ON_MOUNT, false);
+		bReadOnly = mPrefs.getBoolean(PREFS_READ_ONLY, false);
 		        
         setContentView(R.layout.main);
 
@@ -371,6 +376,19 @@ public class Main extends Activity {
 				bCloseOnMount = isChecked;
 				SharedPreferences.Editor editor = mPrefs.edit();
 				editor.putBoolean(PREFS_CLOSE_ON_MOUNT, bCloseOnMount);
+				editor.commit();
+			}
+        });
+        
+        cbReadOnly = (CheckBox) findViewById(R.id.chkbox_readonly);
+        cbReadOnly.setChecked(bReadOnly);
+        cbReadOnly.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+			@Override
+			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+				bReadOnly = isChecked;
+				SharedPreferences.Editor editor = mPrefs.edit();
+				editor.putBoolean(PREFS_READ_ONLY, bReadOnly);
 				editor.commit();
 			}
         });

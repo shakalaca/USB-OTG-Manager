@@ -36,18 +36,25 @@
 		    android:layout_height="match_parent"
 		    android:orientation="vertical"
 			android:layout_weight="1"
-		    android:gravity="center" >
-	        <CheckBox
-	            android:id="@+id/chkbox_hide"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/str_close_app" />
-	        		    
+		    android:gravity="left|center_vertical" >
+		    
 	        <TextView 
 	            android:id="@+id/tv_mountstatus"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content" 
 		        android:text="@string/str_unmounted" />
+
+	        <CheckBox
+	            android:id="@+id/chkbox_readonly"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:text="@string/str_read_only" />
+
+	        <CheckBox
+	            android:id="@+id/chkbox_hide"
+	            android:layout_width="wrap_content"
+	            android:layout_height="wrap_content"
+	            android:text="@string/str_close_app" />	        		    
 		</LinearLayout>
     </LinearLayout>
     

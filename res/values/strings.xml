@@ -22,5 +22,6 @@
     <string name="str_err_unmount">Error unmounting usb storage !</string>
     
     <string name="str_close_app">Close app when mounted</string>
+    <string name="str_read_only">Mount as read only</string>
     
 </resources>
