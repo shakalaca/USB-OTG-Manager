@@ -10,7 +10,7 @@
     <string name="str_mounting">Mounting..</string>
     <string name="str_unmount">Unmount storage</string>
     <string name="str_unmounting">Unmounting..</string>
-    <string name="str_mounted_path">Mounted at \n\n%s</string>
+    <string name="str_mounted_path">Mounted at:%s</string>
     <string name="str_unmounted">No storage mounted</string>
 
     <string name="str_mounted_notify">Storage mounted</string>

@@ -29,7 +29,6 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -48,6 +47,7 @@ public class Main extends Activity {
 	private final static String STORAGE_DEVICE_PATH = "/dev/block/sda1";
 	
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
+	private final static String[] fsTypesInView = {"Filesystem: vfat"/*, "ntfs" */};
 	private int fsType;
 	
 	private final static boolean bIsXperiaSeries = android.os.Build.MODEL.equals("LT18i") || // arc s
@@ -66,7 +66,6 @@ public class Main extends Activity {
 	private Context mContext = this;
 	ArrayAdapter<String> adapter = null;	
 	TextView tvMountStatus = null;
-	ImageView ivMountStatus = null;
 	CheckBox cbCloseOnMount = null;
 	CheckBox cbReadOnly = null;
 	
@@ -261,10 +260,10 @@ public class Main extends Activity {
 	private void updateUI() {
         if (isMounted()) {
         	tvMountStatus.setText(getResources().getString(R.string.str_mounted_path, MOUNT_PATH));
-        	ivMountStatus.setImageResource(R.drawable.usb_android_connected);
+        	tvMountStatus.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.usb_android_connected), null, null);
         } else {
         	tvMountStatus.setText(R.string.str_unmounted);
-        	ivMountStatus.setImageResource(R.drawable.usb_android);
+        	tvMountStatus.setCompoundDrawablesWithIntrinsicBounds(null, getResources().getDrawable(R.drawable.usb_android), null, null);
         }	
     }
 
@@ -400,11 +399,9 @@ public class Main extends Activity {
         });
 
         tvMountStatus = (TextView) findViewById(R.id.tv_mountstatus);
+        tvMountStatus.setOnClickListener(btnMountOnClickListener);
 
-        ivMountStatus = (ImageView) findViewById(R.id.iv_mount_status);
-        ivMountStatus.setOnClickListener(btnMountOnClickListener);
-
-        adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, fsTypes);
+        adapter = new ArrayAdapter<String>(mContext, android.R.layout.simple_spinner_item, fsTypesInView);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner_fstype);

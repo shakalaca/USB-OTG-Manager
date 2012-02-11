@@ -1,41 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical"
-    android:gravity="center" >
-
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/str_fstype"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <Spinner
-        android:id="@+id/spinner_fstype"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-	<ImageView
-		android:id="@+id/iv_mount_status"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_margin="20dip"
-		android:src="@drawable/usb_android" />
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="vertical" >
 
 	<TextView
 	    android:id="@+id/tv_mountstatus"
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content"
-	    android:text="@string/str_unmounted" />
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:layout_weight="1"
+	    android:text="@string/str_unmounted" 
+	    android:drawableTop="@drawable/usb_android"
+	    android:gravity="center" />
 
     <LinearLayout
 	    android:layout_width="match_parent"
 	    android:layout_height="match_parent"
+	    android:layout_weight="1"
 	    android:orientation="vertical"
 	    android:gravity="left" >
 
+	    <Spinner
+	        android:id="@+id/spinner_fstype"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content" />
+	
         <CheckBox
             android:id="@+id/chkbox_readonly"
             android:layout_width="wrap_content"
