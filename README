@@ -19,10 +19,12 @@ Just for fun, any questions feel free contact me :-)
 E-mail: shakalaca AT gmail dot com
 
 2012-02-11
+* 2.1-release [http://dl.dropbox.com/u/8089/UsbStorageManager/UsbStorageManager-2.1.apk]
 * Refine layout
 * Recompile kernel module
 
 2012-02-10
+* 2.0-release
 * Support 3.x or higher version with OTG support built in kernel
 * Add notification for unmount
 * Automatically opens app when storage plugged in
