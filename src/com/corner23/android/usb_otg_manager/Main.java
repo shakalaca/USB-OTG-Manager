@@ -320,7 +320,7 @@ public class Main extends Activity {
 		        	.show();
 			}
 			
-			if (bCloseOnMount) {
+			if (bCloseOnMount && (result == STATE_SUCCESS)) {
 				finish();
 			} else {
 				updateUI();			
