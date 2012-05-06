@@ -20,6 +20,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.hardware.usb.UsbManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -43,7 +44,9 @@ public class Main extends Activity {
 	public final static String PREFS_READ_ONLY = "prefs_read_only";
 
 	private final static String TAG = "USB_OTG_MANAGER";
-	private final static String FN_STORAGE_DRIVER = "usb_storage.ko";
+	private String storage_km;
+	private final static String FN_STORAGE_DRIVER_XPERIA = "usb_storage_xperia.ko";
+	private final static String FN_STORAGE_DRIVER_XPERIA_ICS = "usb_storage_xperia_ics.ko";
 	private final static String STORAGE_DEVICE_PATH = "/dev/block/sda1";
 	
 	private final static String[] fsTypes = {"vfat"/*, "ntfs" */};
@@ -112,7 +115,14 @@ public class Main extends Activity {
 		@Override
 		protected void onPreExecute() {
 	    	try {
-	    		openFileInput(FN_STORAGE_DRIVER);
+	    		if (bIsXperiaSeries) {
+	    			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+			    		storage_km = FN_STORAGE_DRIVER_XPERIA_ICS;
+	    			} else {
+	    				storage_km = FN_STORAGE_DRIVER_XPERIA;
+	    			}
+	    		}
+	    		openFileInput(storage_km);
 	    		Log.d(TAG, "driver file exist, skip copy process..");
 	    	} catch (FileNotFoundException e) {
 	    		doCopy = true;
@@ -125,7 +135,7 @@ public class Main extends Activity {
 			if (doCopy) {
 	            try {
 	        		Log.d(TAG, "driver file not found, copy..");
-	            	writeToStream(getAssets().open(FN_STORAGE_DRIVER), openFileOutput(FN_STORAGE_DRIVER, 0));
+	            	writeToStream(getAssets().open(storage_km), openFileOutput(storage_km, 0));
 	            } catch (Exception e) {
 	            	e.printStackTrace();
 	            }    		
@@ -162,7 +172,7 @@ public class Main extends Activity {
 	        		
 	        		// load kernel module if needed
 	        		if (!driverLoaded) {
-			    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(FN_STORAGE_DRIVER));
+			    		response = Root.executeSU("insmod " + mContext.getFileStreamPath(storage_km));
 			    		if (response != null) {
 		        			Log.d(TAG, "Error loading kernel module :" + response);
 			        		ret = STATE_ERROR_MODULE;
@@ -240,7 +250,7 @@ public class Main extends Activity {
         		}
         		
         		// TODO: option for user
-//            	response = Root.executeSU("rmmod " + FN_STORAGE_DRIVER);
+//            	response = Root.executeSU("rmmod " + storage_km);
 //        		if (response != null) {
 //        			Log.d(TAG, "Error disabling kernel module :" + response);
 //        			break;
