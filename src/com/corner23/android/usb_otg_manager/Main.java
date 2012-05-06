@@ -10,6 +10,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
+import android.app.Notification.Builder;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -282,13 +283,15 @@ public class Main extends Activity {
 		// notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent appIntent = PendingIntent.getService(mContext, 0, notifyIntent, 0);
 
-        Notification notification = new Notification();
-        notification.icon = R.drawable.notification;
-        notification.tickerText = getResources().getString(R.string.str_mounted_notify);
-        // notification.defaults = Notification.DEFAULT_ALL;
-        notification.flags |= Notification.FLAG_NO_CLEAR;
-        notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
-        		getResources().getString(R.string.str_unmount) + " " + MOUNT_PATH, appIntent);
+        Notification notification = new Builder(mContext)
+        	.setSmallIcon(R.drawable.notification)
+        	.setTicker(getResources().getString(R.string.str_mounted_notify))
+        	.setOngoing(true)
+        	.setContentTitle(getResources().getString(R.string.app_name))
+        	.setContentText(getResources().getString(R.string.str_unmount) + " " + MOUNT_PATH)
+        	.setContentIntent(appIntent)
+        	.getNotification();
+        
         notificationManager.notify(0, notification);        
 	}
 	

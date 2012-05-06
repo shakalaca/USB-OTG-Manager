@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.Notification.Builder;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -17,21 +18,22 @@ public class UnmountService extends Service {
     	boolean success = Main.doUnmount();
     	PendingIntent pi = PendingIntent.getService(mContext, 0, new Intent(), 0);
     	NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification notification = new Notification();
-        notification.icon = R.drawable.notification;
-        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+    	
+        Notification.Builder builder = new Builder(mContext)
+        	.setSmallIcon(R.drawable.notification)
+        	.setAutoCancel(true)
+        	.setContentTitle(getResources().getString(R.string.app_name))
+        	.setContentIntent(pi);
         
     	if (success) {
     		notificationManager.cancelAll();
-            notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
-            		getResources().getString(R.string.str_unmounted_notify), pi);
+    		builder.setContentText(getResources().getString(R.string.str_unmounted_notify));
     	} else {
-            notification.defaults = Notification.DEFAULT_ALL;
-            notification.setLatestEventInfo(mContext, getResources().getString(R.string.app_name), 
-            		getResources().getString(R.string.str_err_unmount), pi);
+    		builder.setContentText(getResources().getString(R.string.str_err_unmount));
+    		builder.setDefaults(Notification.DEFAULT_ALL);
     	}
     	
-        notificationManager.notify(0, notification);
+        notificationManager.notify(0, builder.getNotification());
         this.stopSelf();
     }
     	
