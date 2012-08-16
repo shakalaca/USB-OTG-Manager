@@ -60,6 +60,7 @@ public class Main extends Activity {
 													android.os.Build.MODEL.equals("ST15i") || // mini
 													android.os.Build.MODEL.equals("MT15i") || // neo
 													android.os.Build.MODEL.equals("MT11i") || // neo v
+													android.os.Build.MODEL.equals("ST18i") || // ray
 													android.os.Build.MODEL.equals("Z1i");   // play
 	
 	private final static int STATE_SUCCESS = 0;
