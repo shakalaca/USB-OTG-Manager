@@ -212,7 +212,11 @@ public class Main extends Activity {
                 }
         		
         		// do real mount
-        		response = Root.executeSU("mount -r " + (bReadOnly ? "" : "-w") + " -o utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
+                String JB_str = "";
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                	JB_str = "fmask=0000,dmask=0000,";
+                }
+        		response = Root.executeSU("mount -r " + (bReadOnly ? "" : "-w") + " -o " + JB_str + "utf8 -t " + fsTypes[fsType] + " " + STORAGE_DEVICE_PATH + " " + MOUNT_PATH);
         		if (response != null) {
         			Log.d(TAG, "Error mounting usb storage :" + response);
 					Root.executeSU("rmdir " + MOUNT_PATH);
